@@ -14,28 +14,51 @@
 
   <div id="progress-bar" style="position: absolute; left: 0%; right: 100%; top: 49%; bottom: 49%; background-color: white;"></div>
 
-  <script src="Build/a50e79a018bf0c679cc9a6575f7fd662.loader.js"></script>
+  <script src="Build/81bc10c1d5e95e12c6617b15db61fc75.loader.js"></script>
   <script>
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent);
 
+    const desktopPixelCount = 3686400;
+    const mobilePixelCount = 921600;
+
     const settings = {
-      dataUrl: "Build/1269d1971443f5ab24f2d862f82f69b4.data.unityweb",
-      frameworkUrl: "Build/1bff245dbc83ea555f64709ea8112a2a.framework.js.unityweb",
-      codeUrl: "Build/f65b3a813ede5f972fae412c7815bba0.wasm.unityweb",
+      dataUrl: "Build/7de2880c026f1e14009735c72dd6a41a.data.unityweb",
+      frameworkUrl: "Build/b1d3c4d750064afc86266a10137bb998.framework.js.unityweb",
+      codeUrl: "Build/c9de9be8eb43fc374495ebd2a9a1e6fe.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "DefaultCompany",
       productName: "DungeonCrawler",
       productVersion: "0.1",
-      matchWebGLToCanvasSize: true,
-      devicePixelRatio: !isMobileDevice ? 2 : 1.6,
+      matchWebGLToCanvasSize: false,
+      devicePixelRatio: 1,
     };
 
+    const unityCanvas = document.querySelector("#unity-canvas");
     const progressBar = document.querySelector("#progress-bar");
 
-    createUnityInstance(document.querySelector("#unity-canvas"), settings, (progress) => {
+    createUnityInstance(unityCanvas, settings, (progress) => {
+      window.buildLoadingProgress = progress * 100;
       progressBar.style.right = 100 * (1 - progress) + "%";
     }).then(() => {
       progressBar.style.display = "none";
+
+      function adjustResolution() {
+        const targetPixelCount = isMobileDevice ? mobilePixelCount : desktopPixelCount;
+        const aspectRatio = window.innerWidth / window.innerHeight;
+
+        let renderHeight = Math.round(Math.sqrt(targetPixelCount / aspectRatio));
+        let renderWidth = Math.round(renderHeight * aspectRatio);
+
+        const scale = Math.sqrt(targetPixelCount / (renderWidth * renderHeight));
+        renderWidth = Math.round(renderWidth * scale);
+        renderHeight = Math.round(renderHeight * scale);
+        
+        unityCanvas.width = renderWidth;
+        unityCanvas.height = renderHeight;
+      }
+
+      window.addEventListener('resize', adjustResolution);
+      adjustResolution();
     }).catch((message) => {
       alert(message);
     });
